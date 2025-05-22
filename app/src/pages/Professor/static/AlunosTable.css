@@ -1,0 +1,49 @@
+/* .filter-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group {
+    margin-bottom: 10px;
+}
+
+.filter-group h4 {
+    margin: 0 0 5px 0;
+}
+ */
+
+.filter-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    margin-right: 15px;
+}
+
+.filter-box {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    align-items: center;
+    /* margin-right: auto; */
+    margin-right: 2.5%;
+
+
+}
+
+.table-container {
+    margin: 0 auto;
+    width: 95%;
+}
+
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+}
+
+.filter-group {
+    margin-bottom: 10px;
+}   
+
+.compact-input {
+    width: 140px;
+}

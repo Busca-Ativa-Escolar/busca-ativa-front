@@ -1,0 +1,88 @@
+.user-control {
+    padding-top: 7%;
+}
+
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.tabela-usuarios {
+    margin: 0 auto;
+    width: 95%;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.filter-box {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group {
+    margin-bottom: 10px;
+}
+
+
+.user-control {
+    width: 100%;
+  }
+  
+  .title {
+    margin-bottom: 10px;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  .filter-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .filter-box {
+    display: flex;
+    align-items: center;
+  }
+  
+  .compact-input {
+    margin-right: 10px;
+  }
+  
+  .button {
+    margin-left: 10px;
+  }
+  
+  .icon-admin,
+  .icon-email,
+  .icon-nome,
+  .icon-edit,
+  .icon-delete {
+    padding-top: 4px;
+    display: flex;
+  }
+  
+  .button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .create-user {
+    text-decoration: none;
+  }
+  

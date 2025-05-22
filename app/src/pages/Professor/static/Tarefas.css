@@ -1,0 +1,46 @@
+.tarefas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.titulo-centro {
+    flex: 1;
+    text-align: center;
+}
+
+.aluno-info-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.aluno-info-item {
+    flex: 1;
+    margin: 0 8px;
+    padding: 16px;
+    text-align: left;
+}
+
+.tarefa-container {
+    padding: 16px;
+    margin-top: 8px;
+    background-color: #e0e0e0; /* Cor de fundo cinza clara */
+}
+
+.status {
+    margin-top: 8px;
+}
+
+.search-filter-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.tarefas-container {
+    background-color: #f5f5f5; /* Cor de fundo cinza claro */
+    padding: 16px;
+    border-radius: 8px;
+}

@@ -1,0 +1,20 @@
+.dashboard {
+    padding-top: 90px;
+  }
+  
+  .dashboard h4 {
+    font-family: 'Roboto, sans-serif';
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #333;
+  }
+  
+  .dashboard-paper {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .dashboard-paper h5 {
+    margin-bottom: 20px;
+  }
+  

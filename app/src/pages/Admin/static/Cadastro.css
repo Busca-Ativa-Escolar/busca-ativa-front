@@ -1,0 +1,33 @@
+/* Cadastro.css */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8); /* Fundo fosco */
+    padding: 20px;
+    border-radius: 15px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px; /* Espaçamento superior */
+  }
+  
+  .form-field {
+    margin-bottom: 10px; /* Reduzir espaçamento vertical */
+    width: 100%; /* Ajusta a largura dos campos */
+  }
+  
+  .form-title {
+    margin-bottom: 20px;
+  }
+  
+  .form-button {
+    width: 50%; /* Metade do tamanho */
+    margin-top: 10px; /* Espaçamento superior */
+  }
+  
+  .ArrowBackIcon {
+    color: #1976d2;
+    text-decoration: none;
+    font-size: 1.5rem;
+  }
+  

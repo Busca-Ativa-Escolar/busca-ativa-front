@@ -1,0 +1,9 @@
+.nao-encontrado {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh; /* Ajuste conforme necessário */
+    flex-direction: column;
+    text-align: center;
+    padding-top: 20%;
+}
