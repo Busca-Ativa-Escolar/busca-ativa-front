@@ -294,7 +294,6 @@ const CadastroAluno = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    required
                     className="form-field"
                     margin="normal"
                     fullWidth
@@ -324,7 +323,7 @@ const CadastroAluno = () => {
                   <TextField
                     className="form-field"
                     margin="normal"
-                    required
+                    
                     fullWidth
                     id="faltas"
                     label="Faltas"
@@ -377,7 +376,7 @@ const CadastroAluno = () => {
                   <TextField
                     className="form-field"
                     margin="normal"
-                    required
+                    
                     fullWidth
                     id="responsavel"
                     label="Responsável"
@@ -401,7 +400,7 @@ const CadastroAluno = () => {
                     />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth >
                   <InputLabel id="teg-label">Utiliza TEG?</InputLabel>
                   <Select
                     id="teg"
