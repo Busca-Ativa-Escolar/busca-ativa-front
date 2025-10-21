@@ -133,59 +133,60 @@ const CadastroAluno = () => {
     e.preventDefault();
 
     const alunoData = {
-      nome: formData.nome,
-      turma: formData.turma,
-      RA: formData.RA,
-      endereco: formData.endereco,
-      faltas: formData.faltas,
-      dataNascimento: formData.dataNascimento,
-      telefone: formData.telefone,
-      telefone2: formData.telefone2,
-      responsavel: formData.responsavel,
-      responsavel2: formData.responsavel2,
-      utiliz_teg: formData.teg,
-    };
+    nome: formData.nome.trim(),
+    turma: formData.turma.trim(),
+    RA: formData.RA.trim(),
+    endereco: formData.endereco?.trim() || "",
+    faltas: formData.faltas?.trim() || "0",
+    dataNascimento: formData.dataNascimento.format("YYYY-MM-DD"),
+    telefone: formData.telefone?.trim() || "",
+    telefone2: formData.telefone2?.trim() || "",
+    responsavel: formData.responsavel?.trim() || "",
+    responsavel2: formData.responsavel2?.trim() || "",
+    utiliz_teg: formData.teg?.trim() || "NÃO",
+  };
 
     try {
-      // Envia os dados do formulário para a API usando fetch
-      const response = await fetch(rota_base+'/alunoBuscaAtivaOne', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(alunoData),
-      });
+    const response = await fetch(rota_base + '/alunoBuscaAtivaOne', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(alunoData),
+    });
 
-      if (!response.ok) {
-        throw new Error('Erro na requisição');
-      }
+    const data = await response.json();
 
-      const data = await response.json();
-      console.log('Cadastro realizado com sucesso:', data);
-      alert('Cadastro realizado com sucesso');
-      
-      // Reseta o estado do formulário
-      setFormData({
-        nome: '',
-        turma: '',
-        RA: '',
-        endereco: '',
-        telefone: '',
-        faltas: '',
-        dataNascimento: dayjs(),
-        telefone2: '',
-        responsavel: '',
-        responsavel2: '',
-        teg: '',
-      });
-
-      // Redireciona para a página de alunos após o cadastro bem-sucedido
-      navigate('/alunos');
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao realizar cadastro');
+    if (!response.ok) {
+      console.error('Erro da API:', data);
+      alert(data?.message || data?.error || 'Erro ao realizar cadastro');
+      return;
     }
+
+    console.log('Cadastro realizado com sucesso:', data);
+    alert('Cadastro realizado com sucesso');
+
+    setFormData({
+      nome: '',
+      turma: '',
+      RA: '',
+      endereco: '',
+      telefone: '',
+      faltas: '',
+      dataNascimento: dayjs(),
+      telefone2: '',
+      responsavel: '',
+      responsavel2: '',
+      teg: '',
+    });
+
+    navigate('/alunos');
+  } catch (error) {
+    console.error('Erro na requisição:', error);
+    alert('Erro ao realizar cadastro');
+  }
+
   };
 
   return (
@@ -296,11 +297,12 @@ const CadastroAluno = () => {
                   <TextField
                     className="form-field"
                     margin="normal"
+                    required
                     fullWidth
                     id="RA"
                     label="RA"
                     name="RA"
-                    value={formData.ra}
+                    value={formData.RA}
                     onChange={handleChange}
                     autoComplete="RA"
                     />
