@@ -3,7 +3,6 @@ import { Container, Typography, Grid, Paper } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import HeaderAdmin from './HeaderAdmin';
 import Cookies from 'universal-cookie';
-import dayjs from 'dayjs';
 import './static/Dashboard.css';
 import { rota_base } from '../../constants';
 
@@ -14,13 +13,23 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 
 export default function Dashboard() {
   const [casos, setCasos] = useState([]);
   const [urgenciaData, setUrgenciaData] = useState([]);
   const [turmaData, setTurmaData] = useState([]);
-  const [statusResumo, setStatusResumo] = useState({ abertos: 0, finalizados: 0, total: 0 });
+  const [statusResumo, setStatusResumo] = useState({
+    abertos: 0,
+    finalizados: 0,
+    indefinidos: 0,
+    total: 0,
+    percAbertos: 0,
+    percFinalizados: 0,
+    percIndefinidos: 0
+  });
+
   const cookies = new Cookies();
   const token = cookies.get('token');
 
@@ -55,10 +64,12 @@ export default function Dashboard() {
     const turmaCounts = {};
     let abertos = 0;
     let finalizados = 0;
+    let indefinidos = 0;
 
     casos.forEach(caso => {
       if (caso.status === 'EM ABERTO') abertos++;
       else if (caso.status === 'FINALIZADO') finalizados++;
+      else indefinidos++;
 
       // Contagem por urgência
       if (caso.urgencia && urgenciaCounts[caso.urgencia] !== undefined) {
@@ -69,15 +80,26 @@ export default function Dashboard() {
 
       // Casos por turma
       const turma = caso.aluno?.turma || 'Indefinida';
-      if (!turmaCounts[turma]) turmaCounts[turma] = { abertos: 0, finalizados: 0 };
+      if (!turmaCounts[turma]) turmaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
       if (caso.status === 'EM ABERTO') turmaCounts[turma].abertos++;
       else if (caso.status === 'FINALIZADO') turmaCounts[turma].finalizados++;
+      else turmaCounts[turma].indefinidos++;
     });
+
+    const total = abertos + finalizados + indefinidos;
+
+    const percAbertos = total ? ((abertos / total) * 100).toFixed(1) : 0;
+    const percFinalizados = total ? ((finalizados / total) * 100).toFixed(1) : 0;
+    const percIndefinidos = total ? ((indefinidos / total) * 100).toFixed(1) : 0;
 
     setStatusResumo({
       abertos,
       finalizados,
-      total: abertos + finalizados
+      indefinidos,
+      total,
+      percAbertos,
+      percFinalizados,
+      percIndefinidos
     });
 
     const urgenciaData = Object.keys(urgenciaCounts).map(key => ({
@@ -88,7 +110,8 @@ export default function Dashboard() {
     const turmaData = Object.keys(turmaCounts).map(key => ({
       name: key,
       abertos: turmaCounts[key].abertos,
-      finalizados: turmaCounts[key].finalizados
+      finalizados: turmaCounts[key].finalizados,
+      indefinidos: turmaCounts[key].indefinidos
     }));
 
     setUrgenciaData(urgenciaData);
@@ -121,21 +144,38 @@ export default function Dashboard() {
           {/* Indicadores de Status */}
           <Grid item xs={12}>
             <Grid container spacing={3} justifyContent="center">
-              <Grid item xs={12} sm={4}>
+              {/* Em Aberto */}
+              <Grid item xs={12} sm={3}>
                 <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#007bff', color: 'white' }}>
                   <PendingActionsIcon fontSize="large" />
-                  <Typography variant="h6">Casos em Aberto</Typography>
+                  <Typography variant="h6">Em Aberto</Typography>
                   <Typography variant="h3">{statusResumo.abertos}</Typography>
+                  <Typography variant="subtitle2">({statusResumo.percAbertos}% do total)</Typography>
                 </Paper>
               </Grid>
-              <Grid item xs={12} sm={4}>
+
+              {/* Finalizados */}
+              <Grid item xs={12} sm={3}>
                 <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#28a745', color: 'white' }}>
                   <AssignmentTurnedInIcon fontSize="large" />
-                  <Typography variant="h6">Casos Finalizados</Typography>
+                  <Typography variant="h6">Finalizados</Typography>
                   <Typography variant="h3">{statusResumo.finalizados}</Typography>
+                  <Typography variant="subtitle2">({statusResumo.percFinalizados}% do total)</Typography>
                 </Paper>
               </Grid>
-              <Grid item xs={12} sm={4}>
+
+              {/* Sem Status */}
+              <Grid item xs={12} sm={3}>
+                <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#6c757d', color: 'white' }}>
+                  <ErrorOutlineIcon fontSize="large" />
+                  <Typography variant="h6">Sem Status</Typography>
+                  <Typography variant="h3">{statusResumo.indefinidos}</Typography>
+                  <Typography variant="subtitle2">({statusResumo.percIndefinidos}% do total)</Typography>
+                </Paper>
+              </Grid>
+
+              {/* Total */}
+              <Grid item xs={12} sm={3}>
                 <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#6c63ff', color: 'white' }}>
                   <SummarizeIcon fontSize="large" />
                   <Typography variant="h6">Total de Casos</Typography>
@@ -145,7 +185,7 @@ export default function Dashboard() {
             </Grid>
           </Grid>
 
-          {/* Prioridades dos Casos - Somente Números */}
+          {/* Prioridades dos Casos */}
           <Grid item xs={12}>
             <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" mb={2}>
@@ -175,20 +215,21 @@ export default function Dashboard() {
             </Paper>
           </Grid>
 
-          {/* Casos por Turma - Gráfico de Barras */}
+          {/* Casos por Turma */}
           <Grid item xs={12}>
             <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" mb={2}>
-                Casos por Turma (Abertos x Finalizados)
+                Casos por Turma (Abertos x Finalizados x Sem Status)
               </Typography>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <BarChart
                   xAxis={[{ scaleType: 'band', data: turmaData.map(item => item.name) }]}
                   series={[
                     { data: turmaData.map(item => item.abertos), label: 'Em Aberto', color: '#007bff' },
-                    { data: turmaData.map(item => item.finalizados), label: 'Finalizados', color: '#28a745' }
+                    { data: turmaData.map(item => item.finalizados), label: 'Finalizados', color: '#28a745' },
+                    { data: turmaData.map(item => item.indefinidos), label: 'Sem Status', color: '#6c757d' }
                   ]}
-                  width={700}
+                  width={750}
                   height={400}
                 />
               </div>
