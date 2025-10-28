@@ -67,24 +67,34 @@ export default function Dashboard() {
     let indefinidos = 0;
 
     casos.forEach(caso => {
-      if (caso.status === 'EM ABERTO') abertos++;
-      else if (caso.status === 'FINALIZADO') finalizados++;
-      else indefinidos++;
+    // normaliza o status para evitar erro por maiúsculas, acentos ou espaços
+    const status = (caso.status || '').toString().trim().toUpperCase();
 
-      // Contagem por urgência
-      if (caso.urgencia && urgenciaCounts[caso.urgencia] !== undefined) {
-        urgenciaCounts[caso.urgencia]++;
-      } else {
-        urgenciaCounts['INDEFINIDA']++;
-      }
+    if (status === 'EM ABERTO') {
+      abertos++;
+    } else if (status === 'FINALIZADO') {
+      finalizados++;
+    } else {
+      indefinidos++;
+    }
 
-      // Casos por turma
-      const turma = caso.aluno?.turma || 'Indefinida';
-      if (!turmaCounts[turma]) turmaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
-      if (caso.status === 'EM ABERTO') turmaCounts[turma].abertos++;
-      else if (caso.status === 'FINALIZADO') turmaCounts[turma].finalizados++;
-      else turmaCounts[turma].indefinidos++;
-    });
+    // Contagem por urgência
+    const urgencia = (caso.urgencia || '').toString().trim().toUpperCase();
+    if (urgenciaCounts[urgencia] !== undefined) {
+      urgenciaCounts[urgencia]++;
+    } else {
+      urgenciaCounts['INDEFINIDA']++;
+    }
+
+    // Casos por turma
+    const turma = caso.aluno?.turma || 'Indefinida';
+    if (!turmaCounts[turma]) turmaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
+
+    if (status === 'EM ABERTO') turmaCounts[turma].abertos++;
+    else if (status === 'FINALIZADO') turmaCounts[turma].finalizados++;
+    else turmaCounts[turma].indefinidos++;
+  });
+
 
     const total = abertos + finalizados + indefinidos;
 
