@@ -297,7 +297,7 @@ const CadastroAluno = () => {
                   <TextField
                     className="form-field"
                     margin="normal"
-                    required
+                 
                     fullWidth
                     id="RA"
                     label="RA"
@@ -311,7 +311,7 @@ const CadastroAluno = () => {
                   <TextField
                     className="form-field"
                     margin="normal"
-                    required
+                  
                     fullWidth
                     id="endereco"
                     label="Endereço"
