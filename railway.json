@@ -1,7 +1,8 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd app && npm install && npm run build"
+    "buildCommand": "cd app && npm install && npm run build",
+    "packages": ["nodejs", "npm"]
   },
   "deploy": {
     "startCommand": "cd app && npm run start"
