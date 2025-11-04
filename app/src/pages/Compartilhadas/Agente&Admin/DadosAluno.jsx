@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Cookies from 'universal-cookie';
-import { Grid, TextField, Button, Paper, Box, Typography, Container, FormControl, MenuItem, InputLabel, Select } from '@mui/material';
+import { Grid, TextField, Button, Paper, Box, Typography, Container, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import dayjs from 'dayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateField } from '@mui/x-date-pickers/DateField';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-
-
 import HeaderAdmin from '../../Admin/HeaderAdmin';
 import HeaderAgente from '../../Agente/HeaderAgente';
-
 import './static/DadosAluno.css';
 import { rota_base } from '../../../constants';
 
@@ -32,7 +29,7 @@ function DadosAluno() {
   }, [id]);
 
   const fetchAluno = () => {
-    fetch(rota_base+`/alunoBuscaAtiva/${id}`, {
+    fetch(rota_base + `/alunoBuscaAtiva/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -47,8 +44,9 @@ function DadosAluno() {
       })
       .then(data => {
         data.dataNascimento = dayjs(data.dataNascimento, 'YYYY-MM-DD');
-        setAluno(data);
-        setEditedAluno(data);
+        const tipo = data.turma.includes('EJA') ? 'EJA' : 'REGULAR';
+        setAluno({ ...data, turmaTipo: tipo });
+        setEditedAluno({ ...data, turmaTipo: tipo });
       })
       .catch(error => {
         console.error('Error fetching aluno:', error);
@@ -71,15 +69,16 @@ function DadosAluno() {
   };
 
   const handleSave = () => {
+    const alunoToSave = { ...editedAluno };
+    alunoToSave.dataNascimento = dayjs(alunoToSave.dataNascimento).format('YYYY-MM-DD');
 
-    console.log('editedAluno:', editedAluno);
-    fetch(rota_base+`/alunoBuscaAtiva/${id}`, {
+    fetch(rota_base + `/alunoBuscaAtiva/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(editedAluno),
+      body: JSON.stringify(alunoToSave),
     })
       .then(response => {
         if (!response.ok) {
@@ -100,15 +99,15 @@ function DadosAluno() {
       <div className='geral'>
         <Grid container spacing={2} className="login-container">
           <Grid item xs={12} style={{ textAlign: 'center' }}>
-            <Container maxWidth="md" sx={{marginTop: '6%'}}>
+            <Container maxWidth="md" sx={{ marginTop: '6%' }}>
               <Paper sx={{ padding: '25px', margin: '25px' }}>
                 {aluno ? (
                   <Box component="form" noValidate autoComplete="off">
-                    <br/>
+                    <br />
                     <Typography component="h1" variant="h5" className="form-title">
                       Detalhes do Aluno
                     </Typography>
-                    <br/>
+                    <br />
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={6}>
                         <TextField
@@ -124,20 +123,91 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
-                        <TextField
-                          name="turma"
-                          label="Turma"
-                          variant="outlined"
-                          fullWidth
-                          value={editedAluno.turma || ''}
-                          onChange={handleInputChange}
-                          InputProps={{
-                            readOnly: !editMode,
-                            style: { backgroundColor: editMode ? 'white' : 'inherit' }
-                          }}
-                        />
+                        <FormControl fullWidth>
+                          <InputLabel id="turmaTipo-label">Turma</InputLabel>
+                          <Select
+                            labelId="turmaTipo-label"
+                            name="turmaTipo"
+                            value={editedAluno.turmaTipo || ''}
+                            onChange={(e) => {
+                              setEditedAluno({
+                                ...editedAluno,
+                                turmaTipo: e.target.value,
+                                turma: ''
+                              });
+                            }}
+                            label="Turma"
+                            disabled={!editMode}
+                            style={{ backgroundColor: editMode ? 'white' : 'inherit' }}
+                          >
+                            <MenuItem value="REGULAR">Regular</MenuItem>
+                            <MenuItem value="EJA">EJA</MenuItem>
+                          </Select>
+                        </FormControl>
                       </Grid>
+
+                      {editedAluno.turmaTipo === 'REGULAR' && (
+                        <Grid item xs={12} sm={6}>
+                          <FormControl fullWidth>
+                            <InputLabel id="classe-regular-label">Classe</InputLabel>
+                            <Select
+                              labelId="classe-regular-label"
+                              name="turma"
+                              value={editedAluno.turma || ''}
+                              onChange={handleInputChange}
+                              label="Classe"
+                              disabled={!editMode}
+                              style={{ backgroundColor: editMode ? 'white' : 'inherit' }}
+                            >
+                              {[
+                                '1A', '1B', '1C',
+                                '2A', '2B', '2C',
+                                '3A', '3B', '3C',
+                                '4A', '4B', '4C',
+                                '5A', '5B', '5C',
+                                '6A', '6B', '6C',
+                                '7A', '7B', '7C',
+                                '8A', '8B', '8C',
+                                '9A', '9B', '9C'
+                              ].map((turma) => (
+                                <MenuItem key={turma} value={turma}>{turma}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                      )}
+
+                      {editedAluno.turmaTipo === 'EJA' && (
+                        <Grid item xs={12} sm={6}>
+                          <FormControl fullWidth>
+                            <InputLabel id="classe-eja-label">Classe</InputLabel>
+                            <Select
+                              labelId="classe-eja-label"
+                              name="turma"
+                              value={editedAluno.turma || ''}
+                              onChange={handleInputChange}
+                              label="Classe"
+                              disabled={!editMode}
+                              style={{ backgroundColor: editMode ? 'white' : 'inherit' }}
+                            >
+                              {['EJA-1A', 'EJA-1B', 'EJA-1C',
+                            'EJA-2A', 'EJA-2B', 'EJA-2C',
+                            'EJA-3A', 'EJA-3B', 'EJA-3C',
+                            'EJA-4A', 'EJA-4B', 'EJA-4C',
+                            'EJA-5A', 'EJA-5B', 'EJA-5C',
+                            'EJA-6A', 'EJA-6B', 'EJA-6C',
+                            'EJA-7A', 'EJA-7B', 'EJA-7C',
+                            'EJA-8A', 'EJA-8B', 'EJA-8C',
+                            'EJA-9A', 'EJA-9B', 'EJA-9C'].map((turma) => (
+                                <MenuItem key={turma} value={turma}>{turma}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                      )}
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="RA"
@@ -152,6 +222,7 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="endereco"
@@ -166,6 +237,7 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="faltas"
@@ -180,6 +252,7 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DemoContainer components={['DateField', 'DateField']}>
@@ -187,15 +260,16 @@ function DadosAluno() {
                               label="Data de Nascimento"
                               value={editedAluno.dataNascimento}
                               onChange={handleInputDateChange}
-                              format='DD/MM/YYYY'
+                              format="DD/MM/YYYY"
+                              readOnly={!editMode}
                               InputProps={{
-                                readOnly: !editMode,
                                 style: { backgroundColor: editMode ? 'white' : 'inherit' }
                               }}
                             />
                           </DemoContainer>
                         </LocalizationProvider>
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="telefone"
@@ -210,6 +284,7 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="telefone2"
@@ -224,6 +299,7 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="responsavel"
@@ -238,6 +314,7 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
+
                       <Grid item xs={12} sm={6}>
                         <TextField
                           name="responsavel2"
@@ -252,42 +329,29 @@ function DadosAluno() {
                           }}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <FormControl fullWidth required>
-                          <InputLabel id="teg-label">Utiliza TEG?</InputLabel>
-                          <Select
-                            id="utiliz_teg"
-                            name="utiliz_teg" // Certifique-se de que o nome seja consistente
-                            value={editedAluno.utiliz_teg || ''} // Consistência com a chave no estado
-                            onChange={handleInputChange}
-                            disabled={!editMode} // Use `disabled` para controlar o estado de edição
-                            labelId="teg-label"
-                          >
-                            <MenuItem value=""><em>Nenhum</em></MenuItem>
-                            <MenuItem value="NÃO">Não</MenuItem>
-                            <MenuItem value="SIM">Sim</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Grid>
                     </Grid>
-                    <Box sx={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                      <Button variant="contained" component={Link} to="/alunos">Voltar</Button>
+
+                    <br />
+                    <div style={{ textAlign: 'center' }}>
                       {editMode ? (
-                        <Button variant="contained" onClick={handleSave}>Salvar</Button>
+                        <Button variant="contained" color="primary" onClick={handleSave}>
+                          Salvar
+                        </Button>
                       ) : (
-                        <Button variant="contained" onClick={() => setEditMode(true)}>Editar</Button>
+                        <Button variant="contained" onClick={() => setEditMode(true)}>
+                          Editar
+                        </Button>
                       )}
-                    </Box>
+                    </div>
                   </Box>
                 ) : (
-                  <div>Carregando...</div>
+                  <Typography>Carregando...</Typography>
                 )}
               </Paper>
             </Container>
           </Grid>
         </Grid>
       </div>
-      <br />
     </div>
   );
 }

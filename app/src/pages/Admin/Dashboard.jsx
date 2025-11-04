@@ -1,25 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Paper } from '@mui/material';
-import { BarChart } from '@mui/x-charts/BarChart';
-import HeaderAdmin from './HeaderAdmin';
-import Cookies from 'universal-cookie';
-import './static/Dashboard.css';
-import { rota_base } from '../../constants';
+import React, { useEffect, useState } from "react";
+import { Container, Typography, Grid, Paper } from "@mui/material";
+import { BarChart } from "@mui/x-charts/BarChart";
+import HeaderAdmin from "./HeaderAdmin";
+import Cookies from "universal-cookie";
+import "./static/Dashboard.css";
+import { rota_base } from "../../constants";
 
-// Ícones MUI
-import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import SummarizeIcon from '@mui/icons-material/Summarize';
+import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import SummarizeIcon from "@mui/icons-material/Summarize";
 
 export default function Dashboard() {
   const [casos, setCasos] = useState([]);
   const [urgenciaData, setUrgenciaData] = useState([]);
   const [turmaData, setTurmaData] = useState([]);
+  const [regularData, setRegularData] = useState([]);
+  const [ejaData, setEjaData] = useState([]);
   const [statusResumo, setStatusResumo] = useState({
     abertos: 0,
     finalizados: 0,
@@ -27,77 +28,75 @@ export default function Dashboard() {
     total: 0,
     percAbertos: 0,
     percFinalizados: 0,
-    percIndefinidos: 0
+    percIndefinidos: 0,
   });
 
   const cookies = new Cookies();
-  const token = cookies.get('token');
+  const token = cookies.get("token");
 
   useEffect(() => {
-    const fetchCases = () => {
-      const url = `${rota_base}/casos`;
-
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({})
+    fetch(`${rota_base}/casos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao buscar casos");
+        return res.json();
       })
-        .then(response => {
-          if (!response.ok) throw new Error('Erro ao buscar casos');
-          return response.json();
-        })
-        .then(data => {
-          setCasos(data.caso);
-          processCaseData(data.caso);
-        })
-        .catch(error => console.error('Erro:', error.message));
-    };
-
-    fetchCases();
+      .then((data) => {
+        setCasos(data.caso);
+        processCaseData(data.caso);
+      })
+      .catch((err) => console.error("Erro:", err.message));
   }, [token]);
 
   const processCaseData = (casos) => {
-    const urgenciaCounts = { 'ALTA': 0, 'MEDIA': 0, 'BAIXA': 0, 'INDEFINIDA': 0 };
+    const urgenciaCounts = { ALTA: 0, MEDIA: 0, BAIXA: 0, INDEFINIDA: 0 };
     const turmaCounts = {};
+    const regularCounts = {};
+    const ejaCounts = {};
     let abertos = 0;
     let finalizados = 0;
     let indefinidos = 0;
 
-    casos.forEach(caso => {
-    // normaliza o status para evitar erro por maiúsculas, acentos ou espaços
-    const status = (caso.status || '').toString().trim().toUpperCase();
+    casos.forEach((caso) => {
+      const status = (caso.status || "").trim().toUpperCase();
+      const turma = caso.aluno?.turma || "Indefinida";
+      const urgencia = (caso.urgencia || "").trim().toUpperCase();
 
-    if (status === 'EM ABERTO') {
-      abertos++;
-    } else if (status === 'FINALIZADO') {
-      finalizados++;
-    } else {
-      indefinidos++;
-    }
+      if (status === "EM ABERTO") abertos++;
+      else if (status === "FINALIZADO") finalizados++;
+      else indefinidos++;
 
-    // Contagem por urgência
-    const urgencia = (caso.urgencia || '').toString().trim().toUpperCase();
-    if (urgenciaCounts[urgencia] !== undefined) {
-      urgenciaCounts[urgencia]++;
-    } else {
-      urgenciaCounts['INDEFINIDA']++;
-    }
+      if (urgenciaCounts[urgencia] !== undefined) urgenciaCounts[urgencia]++;
+      else urgenciaCounts["INDEFINIDA"]++;
 
-    // Casos por turma
-    const turma = caso.aluno?.turma || 'Indefinida';
-    if (!turmaCounts[turma]) turmaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
+      if (!turmaCounts[turma])
+        turmaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
+      if (status === "EM ABERTO") turmaCounts[turma].abertos++;
+      else if (status === "FINALIZADO") turmaCounts[turma].finalizados++;
+      else turmaCounts[turma].indefinidos++;
 
-    if (status === 'EM ABERTO') turmaCounts[turma].abertos++;
-    else if (status === 'FINALIZADO') turmaCounts[turma].finalizados++;
-    else turmaCounts[turma].indefinidos++;
-  });
-
+      if (turma.startsWith("EJA")) {
+        if (!ejaCounts[turma])
+          ejaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
+        if (status === "EM ABERTO") ejaCounts[turma].abertos++;
+        else if (status === "FINALIZADO") ejaCounts[turma].finalizados++;
+        else ejaCounts[turma].indefinidos++;
+      } else {
+        if (!regularCounts[turma])
+          regularCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
+        if (status === "EM ABERTO") regularCounts[turma].abertos++;
+        else if (status === "FINALIZADO") regularCounts[turma].finalizados++;
+        else regularCounts[turma].indefinidos++;
+      }
+    });
 
     const total = abertos + finalizados + indefinidos;
-
     const percAbertos = total ? ((abertos / total) * 100).toFixed(1) : 0;
     const percFinalizados = total ? ((finalizados / total) * 100).toFixed(1) : 0;
     const percIndefinidos = total ? ((indefinidos / total) * 100).toFixed(1) : 0;
@@ -109,31 +108,66 @@ export default function Dashboard() {
       total,
       percAbertos,
       percFinalizados,
-      percIndefinidos
+      percIndefinidos,
     });
 
-    const urgenciaData = Object.keys(urgenciaCounts).map(key => ({
-      name: key,
-      value: urgenciaCounts[key]
-    }));
+    setUrgenciaData(
+      Object.keys(urgenciaCounts).map((key) => ({
+        name: key,
+        value: urgenciaCounts[key],
+      }))
+    );
 
-    const turmaData = Object.keys(turmaCounts).map(key => ({
-      name: key,
-      abertos: turmaCounts[key].abertos,
-      finalizados: turmaCounts[key].finalizados,
-      indefinidos: turmaCounts[key].indefinidos
-    }));
+    setTurmaData(
+      Object.keys(turmaCounts).map((key) => ({
+        name: key,
+        ...turmaCounts[key],
+      }))
+    );
 
-    setUrgenciaData(urgenciaData);
-    setTurmaData(turmaData);
+    setRegularData(
+      Object.keys(regularCounts).map((key) => ({
+        name: key,
+        ...regularCounts[key],
+      }))
+    );
+
+    setEjaData(
+      Object.keys(ejaCounts).map((key) => ({
+        name: key,
+        ...ejaCounts[key],
+      }))
+    );
   };
 
   const prioridadeConfig = {
-    'ALTA': { color: '#dc3545', icon: <PriorityHighIcon fontSize="large" /> },
-    'MEDIA': { color: '#ffc107', icon: <ReportProblemIcon fontSize="large" /> },
-    'BAIXA': { color: '#28a745', icon: <CheckCircleIcon fontSize="large" /> },
-    'INDEFINIDA': { color: '#6c757d', icon: <HelpOutlineIcon fontSize="large" /> }
+    ALTA: { color: "#dc3545", icon: <PriorityHighIcon fontSize="large" /> },
+    MEDIA: { color: "#ffc107", icon: <ReportProblemIcon fontSize="large" /> },
+    BAIXA: { color: "#28a745", icon: <CheckCircleIcon fontSize="large" /> },
+    INDEFINIDA: { color: "#6c757d", icon: <HelpOutlineIcon fontSize="large" /> },
   };
+
+  const renderChart = (title, data) => (
+    <Grid item xs={12}>
+      <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
+        <Typography variant="h5" mb={2}>
+          {title}
+        </Typography>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <BarChart
+            xAxis={[{ scaleType: "band", data: data.map((d) => d.name) }]}
+            series={[
+              { data: data.map((d) => d.abertos), label: "Em Aberto", color: "#007bff" },
+              { data: data.map((d) => d.finalizados), label: "Finalizados", color: "#28a745" },
+              { data: data.map((d) => d.indefinidos), label: "Sem Status", color: "#6c757d" },
+            ]}
+            width={750}
+            height={400}
+          />
+        </div>
+      </Paper>
+    </Grid>
+  );
 
   return (
     <div>
@@ -141,12 +175,7 @@ export default function Dashboard() {
       <Container className="dashboard">
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              textTransform="uppercase"
-              color="#333"
-            >
+            <Typography variant="h5" fontWeight="bold" textTransform="uppercase" color="#333">
               Dashboard
             </Typography>
           </Grid>
@@ -154,39 +183,32 @@ export default function Dashboard() {
           {/* Indicadores de Status */}
           <Grid item xs={12}>
             <Grid container spacing={3} justifyContent="center">
-              {/* Em Aberto */}
               <Grid item xs={12} sm={3}>
-                <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#007bff', color: 'white' }}>
+                <Paper sx={{ p: 2, textAlign: "center", backgroundColor: "#007bff", color: "white" }}>
                   <PendingActionsIcon fontSize="large" />
                   <Typography variant="h6">Em Aberto</Typography>
                   <Typography variant="h3">{statusResumo.abertos}</Typography>
                   <Typography variant="subtitle2">({statusResumo.percAbertos}% do total)</Typography>
                 </Paper>
               </Grid>
-
-              {/* Finalizados */}
               <Grid item xs={12} sm={3}>
-                <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#28a745', color: 'white' }}>
+                <Paper sx={{ p: 2, textAlign: "center", backgroundColor: "#28a745", color: "white" }}>
                   <AssignmentTurnedInIcon fontSize="large" />
                   <Typography variant="h6">Finalizados</Typography>
                   <Typography variant="h3">{statusResumo.finalizados}</Typography>
                   <Typography variant="subtitle2">({statusResumo.percFinalizados}% do total)</Typography>
                 </Paper>
               </Grid>
-
-              {/* Sem Status */}
               <Grid item xs={12} sm={3}>
-                <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#6c757d', color: 'white' }}>
+                <Paper sx={{ p: 2, textAlign: "center", backgroundColor: "#6c757d", color: "white" }}>
                   <ErrorOutlineIcon fontSize="large" />
                   <Typography variant="h6">Sem Status</Typography>
                   <Typography variant="h3">{statusResumo.indefinidos}</Typography>
                   <Typography variant="subtitle2">({statusResumo.percIndefinidos}% do total)</Typography>
                 </Paper>
               </Grid>
-
-              {/* Total */}
               <Grid item xs={12} sm={3}>
-                <Paper elevation={3} sx={{ p: 2, textAlign: 'center', backgroundColor: '#6c63ff', color: 'white' }}>
+                <Paper sx={{ p: 2, textAlign: "center", backgroundColor: "#6c63ff", color: "white" }}>
                   <SummarizeIcon fontSize="large" />
                   <Typography variant="h6">Total de Casos</Typography>
                   <Typography variant="h3">{statusResumo.total}</Typography>
@@ -197,23 +219,16 @@ export default function Dashboard() {
 
           {/* Prioridades dos Casos */}
           <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
+            <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
               <Typography variant="h5" mb={2}>
                 Prioridade dos Casos
               </Typography>
               <Grid container spacing={2} justifyContent="center">
                 {urgenciaData.map((item, i) => {
-                  const config = prioridadeConfig[item.name] || prioridadeConfig['INDEFINIDA'];
+                  const config = prioridadeConfig[item.name] || prioridadeConfig["INDEFINIDA"];
                   return (
                     <Grid item xs={6} sm={3} key={i}>
-                      <Paper
-                        elevation={3}
-                        sx={{
-                          p: 2,
-                          backgroundColor: config.color,
-                          color: 'white'
-                        }}
-                      >
+                      <Paper elevation={3} sx={{ p: 2, backgroundColor: config.color, color: "white" }}>
                         {config.icon}
                         <Typography variant="subtitle1">{item.name}</Typography>
                         <Typography variant="h4">{item.value}</Typography>
@@ -225,26 +240,10 @@ export default function Dashboard() {
             </Paper>
           </Grid>
 
-          {/* Casos por Turma */}
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="h5" mb={2}>
-                Casos por Turma (Abertos x Finalizados x Sem Status)
-              </Typography>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <BarChart
-                  xAxis={[{ scaleType: 'band', data: turmaData.map(item => item.name) }]}
-                  series={[
-                    { data: turmaData.map(item => item.abertos), label: 'Em Aberto', color: '#007bff' },
-                    { data: turmaData.map(item => item.finalizados), label: 'Finalizados', color: '#28a745' },
-                    { data: turmaData.map(item => item.indefinidos), label: 'Sem Status', color: '#6c757d' }
-                  ]}
-                  width={750}
-                  height={400}
-                />
-              </div>
-            </Paper>
-          </Grid>
+          {/* Gráficos */}
+          {renderChart("Casos por Turma (Regular)", regularData)}
+          {renderChart("Casos por Turma (EJA)", ejaData)}
+          {renderChart("Casos por Turma (Geral)", turmaData)}
         </Grid>
       </Container>
     </div>

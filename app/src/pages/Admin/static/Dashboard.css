@@ -1,20 +1,162 @@
+/* ======== CONTAINER GERAL ======== */
 .dashboard {
-    padding-top: 90px;
+  padding-top: 90px;
+  padding-bottom: 50px;
+}
+
+.dashboard h4,
+.dashboard h5 {
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #333;
+}
+
+/* ======== PAPER (CARDS) ======== */
+.dashboard-paper {
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-paper:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-paper h5 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: #222;
+}
+
+/* ======== CARDS DE STATUS ======== */
+.status-card {
+  text-align: center;
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.status-aberto {
+  background-color: #007bff;
+}
+
+.status-finalizado {
+  background-color: #28a745;
+}
+
+.status-indefinido {
+  background-color: #6c757d;
+}
+
+.status-total {
+  background-color: #6c63ff;
+}
+
+/* ======== ÍCONES E TIPOGRAFIA ======== */
+.status-card svg {
+  margin-bottom: 8px;
+}
+
+.status-card h6 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.status-card h3 {
+  font-size: 2.5rem;
+  margin: 5px 0;
+}
+
+/* ======== GRÁFICOS ======== */
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.chart-title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* ======== PIE CHART ======== */
+.pie-section {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pie-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.pie-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* Cores da legenda do gráfico de pizza */
+.pie-color.alta {
+  background-color: #dc3545;
+}
+.pie-color.media {
+  background-color: #ffc107;
+}
+.pie-color.baixa {
+  background-color: #28a745;
+}
+.pie-color.indefinida {
+  background-color: #6c757d;
+}
+
+/* ======== RESPONSIVIDADE ======== */
+@media (max-width: 768px) {
+  .dashboard {
+    padding-top: 60px;
   }
-  
-  .dashboard h4 {
-    font-family: 'Roboto, sans-serif';
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #333;
+
+  .chart-container {
+    flex-direction: column;
   }
-  
+
+  .status-card h3 {
+    font-size: 2rem;
+  }
+
   .dashboard-paper {
-    padding: 20px;
-    text-align: center;
+    padding: 15px;
   }
-  
-  .dashboard-paper h5 {
-    margin-bottom: 20px;
+
+  .pie-legend {
+    gap: 10px;
   }
-  
+}

@@ -1,49 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import Cookies from 'universal-cookie';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import { Link, useNavigate } from 'react-router-dom';
-import { Typography } from '@mui/material';
-
-import DeleteIcon from '@mui/icons-material/Delete';
-import GroupsIcon from '@mui/icons-material/Groups';
-import BadgeIcon from '@mui/icons-material/Badge';
-import ContactsIcon from '@mui/icons-material/Contacts';
-import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-import ComputerIcon from '@mui/icons-material/Computer';
-
-import HeaderAdmin from '../../Admin/HeaderAdmin';
-import HeaderAgente from '../../Agente/HeaderAgente';
-import './static/ListaAluno.css';
-import { rota_base } from '../../../constants';
-
-
+import React, { useEffect, useState } from "react";
+import Cookies from "universal-cookie";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Checkbox,
+  FormControlLabel,
+  Chip,
+  Box,
+  OutlinedInput,
+  Typography,
+} from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import DeleteIcon from "@mui/icons-material/Delete";
+import GroupsIcon from "@mui/icons-material/Groups";
+import BadgeIcon from "@mui/icons-material/Badge";
+import ContactsIcon from "@mui/icons-material/Contacts";
+import TextSnippetIcon from "@mui/icons-material/TextSnippet";
+import ComputerIcon from "@mui/icons-material/Computer";
+import HeaderAdmin from "../../Admin/HeaderAdmin";
+import HeaderAgente from "../../Agente/HeaderAgente";
+import "./static/ListaAluno.css";
+import { rota_base } from "../../../constants";
 
 const columns = [
-  { id: 'nome', label: 'NOME', minWidth: 100 },
-  { id: 'turma', label: 'TURMA', minWidth: 100 },
-  { id: 'RA', label: 'RA', minWidth: 100 },
-  { id: 'view', label: 'VISUALIZAR DADOS', minWidth: 150 },
-  { id: 'tarefa', label: 'TAREFA', minWidth: 100 },
-  { id: 'delete', label: 'DELETAR', minWidth: 100 },
+  { id: "nome", label: "NOME", minWidth: 100 },
+  { id: "turma", label: "TURMA", minWidth: 100 },
+  { id: "RA", label: "RA", minWidth: 100 },
+  { id: "view", label: "VISUALIZAR DADOS", minWidth: 150 },
+  { id: "tarefa", label: "TAREFA", minWidth: 100 },
+  { id: "delete", label: "DELETAR", minWidth: 100 },
 ];
 
 function createData(id, nome, turma, RA) {
@@ -56,12 +57,12 @@ function ListaAluno() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterYears, setFilterYears] = useState([]);
   const [filterClasses, setFilterClasses] = useState([]);
   const [sortOption, setSortOption] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const token = cookies.get('token');
-  const permissao = cookies.get('permissao');
+  const [tipoEnsino, setTipoEnsino] = useState("");
+  const token = cookies.get("token");
+  const permissao = cookies.get("permissao");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,33 +70,33 @@ function ListaAluno() {
   }, []);
 
   const fetchUsers = () => {
-    fetch(rota_base+'/alunoBuscaAtiva/completo', {
-      method: 'GET',
+    fetch(rota_base + "/alunoBuscaAtiva/completo", {
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch users");
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         setUsers(data);
         setFilteredUsers(data);
       })
-      .catch(error => {
-        console.error('Error fetching users:', error);
-      });
+      .catch((error) => console.error("Error fetching users:", error));
   };
 
   useEffect(() => {
-    let results = users.filter(user =>
-      (user.nome.toLowerCase().includes(searchTerm.toLowerCase()) || user.RA && String(user.RA).includes(searchTerm)) &&
-      (filterYears.length === 0 || filterYears.some(year => user.turma.startsWith(year))) &&
-      (filterClasses.length === 0 || filterClasses.some(cls => user.turma.endsWith(cls)))
+    let results = users.filter(
+      (user) =>
+        (user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (user.RA && String(user.RA).includes(searchTerm))) &&
+        (filterClasses.length === 0 ||
+          filterClasses.some(
+            (cls) => user.turma.toUpperCase() === cls.toUpperCase()
+          ))
     );
 
     if (sortOption === "nameAsc") {
@@ -105,110 +106,95 @@ function ListaAluno() {
     }
 
     setFilteredUsers(results);
-  }, [searchTerm, filterYears, filterClasses, sortOption, users]);
+  }, [searchTerm, sortOption, filterClasses, users]);
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+  const handleSearchChange = (event) => setSearchTerm(event.target.value);
+  const handleSortChange = (event) => setSortOption(event.target.value);
+  const handleOpenDialog = () => setDialogOpen(true);
+  const handleCloseDialog = () => setDialogOpen(false);
+  const handleClearFilters = () => {
+    setTipoEnsino("");
+    setFilterClasses([]);
   };
 
-  const handleYearChange = (event) => {
-    const { value } = event.target;
-    setFilterYears(prev =>
-      prev.includes(value) ? prev.filter(year => year !== value) : [...prev, value]
-    );
+  const handleView = (id) => navigate(`/alunos/${id}`);
+  const handleTarefa = (id) => navigate(`/tarefas/${id}`);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const handleConfirmDelete = (id) => {
+    setSelectedUserId(id);
+    setDeleteDialogOpen(true);
   };
-
-  const handleClassChange = (event) => {
-    const { value } = event.target;
-    setFilterClasses(prev =>
-      prev.includes(value) ? prev.filter(cls => cls !== value) : [...prev, value]
-    );
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedUserId(null);
   };
-
-  const handleSortChange = (event) => {
-    setSortOption(event.target.value);
-  };
-
-  const handleView = (id) => {
-    navigate(`/alunos/${id}`);
-  };
-
-  const handleTarefa = (id) => {
-    navigate(`/tarefas/${id}`);
-  };
-
-const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-const [selectedUserId, setSelectedUserId] = useState(null);
-
-const handleConfirmDelete = (id) => {
-  setSelectedUserId(id);
-  setDeleteDialogOpen(true);
-};
-
-const handleCloseDeleteDialog = () => {
-  setDeleteDialogOpen(false);
-  setSelectedUserId(null);
-};
-
-const handleDelete = () => {
-  if (!selectedUserId) return;
-
-  fetch(rota_base+`/alunoBuscaAtiva/${selectedUserId}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to delete user');
-      }
-      setUsers(users.filter(user => user._id !== selectedUserId));
-      handleCloseDeleteDialog();
+  const handleDelete = () => {
+    if (!selectedUserId) return;
+    fetch(rota_base + `/alunoBuscaAtiva/${selectedUserId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     })
-    .catch(error => {
-      console.error('Error deleting user:', error);
-    });
-};
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to delete user");
+        setUsers(users.filter((user) => user._id !== selectedUserId));
+        handleCloseDeleteDialog();
+      })
+      .catch((error) => console.error("Error deleting user:", error));
   };
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
 
-  const rows = filteredUsers.map(user => {
-    return createData(user._id, user.nome, user.turma, user.RA);
-  });
+  const regularClasses = [
+    "1A", "1B", "1C",
+    "2A", "2B", "2C",
+    "3A", "3B", "3C",
+    "4A", "4B", "4C",
+    "5A", "5B", "5C",
+    "6A", "6B", "6C",
+    "7A", "7B", "7C",
+    "8A", "8B", "8C",
+    "9A", "9B", "9C",
+  ];
+
+  const ejaClasses = ["EJA-1A", "EJA-1B", "EJA-1C",
+                            "EJA-2A", "EJA-2B", "EJA-2C",
+                            "EJA-3A", "EJA-3B", "EJA-3C",
+                            "EJA-4A", "EJA-4B", "EJA-4C",
+                            "EJA-5A", "EJA-5B", "EJA-5C",
+                            "EJA-6A", "EJA-6B", "EJA-6C",
+                            "EJA-7A", "EJA-7B", "EJA-7C",
+                            "EJA-8A", "EJA-8B", "EJA-8C",
+                            "EJA-9A", "EJA-9B", "EJA-9C"];
+
+  const rows = filteredUsers.map((user) =>
+    createData(user._id, user.nome, user.turma, user.RA)
+  );
 
   return (
-    <div className='user-control'>
-      {permissao === 'AGENTE' ? <HeaderAgente /> : <HeaderAdmin />}
-      <div className='title'>
-        <Typography 
-          variant="h4" 
-          component="h4" 
-          style={{ 
-            marginBottom: '10px', 
-            textAlign: 'center', 
-            fontFamily: 'Roboto, sans-serif', 
-            fontWeight: 'bold', 
-            textTransform: 'uppercase', 
-            paddingLeft: "2%"
+    <div className="user-control">
+      {permissao === "AGENTE" ? <HeaderAgente /> : <HeaderAdmin />}
+      <div className="title">
+        <Typography
+          variant="h4"
+          component="h4"
+          style={{
+            marginBottom: "10px",
+            textAlign: "center",
+            fontFamily: "Roboto, sans-serif",
+            fontWeight: "bold",
+            textTransform: "uppercase",
+            paddingLeft: "2%",
           }}
         >
           Controle de Alunos
@@ -246,58 +232,72 @@ const handleDelete = () => {
           </div>
         </div>
       </div>
-      <Dialog className='tabela-aluno' open={dialogOpen} onClose={handleCloseDialog}>
+
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Filtros</DialogTitle>
-      <DialogContent>
-        <div className="filter-section">
-          <div className="filter-group">
-            <h4>Ano:</h4>
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(year => (
-              <FormControlLabel
-                key={year}
-                control={<Checkbox checked={filterYears.includes(year)} onChange={handleYearChange} value={year} />}
-                label={`${year}° Ano`}
-              />
-            ))}
-          </div>
+        <DialogContent>
+          <div className="filter-section">
+            <div className="filter-group">
+              <h4>Turma:</h4>
+              <FormControl fullWidth variant="outlined" size="small" sx={{ mt: 1 }}>
+                <InputLabel id="tipo-ensino-label">Turma</InputLabel>
+                <Select
+                  labelId="tipo-ensino-label"
+                  value={tipoEnsino}
+                  onChange={(e) => {
+                    setTipoEnsino(e.target.value);
+                    setFilterClasses([]);
+                  }}
+                  label="Turma"
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  <MenuItem value="REGULAR">Regular</MenuItem>
+                  <MenuItem value="EJA">EJA</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
 
-          <div className="filter-group">
-            <h4>Turma:</h4>
-            <FormControl fullWidth variant="outlined" size="small" sx={{ mt: 2 }}>
-              <InputLabel id="turma-select-label">Turma</InputLabel>
-              <Select
-                labelId="turma-select-label"
-                value={filterClasses[0] || ""}
-                onChange={(e) => setFilterClasses(e.target.value ? [e.target.value] : [])}
-                label="Turma"
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {[
-                  "1A", "1B", "1C",
-                  "2A", "2B", "2C",
-                  "3A", "3B", "3C",
-                  "4A", "4B", "4C",
-                  "5A", "5B", "5C",
-                  "6A", "6B", "6C",
-                  "7A", "7B", "7C",
-                  "8A", "8B", "8C",
-                  "9A", "9B", "9C",
-                  "EJA1", "EJA2"
-                ].map((turma) => (
-                  <MenuItem key={turma} value={turma}>{turma}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {tipoEnsino && (
+              <div className="filter-group">
+                <h4>Classe:</h4>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="classe-select-label">Classe</InputLabel>
+                  <Select
+                    labelId="classe-select-label"
+                    multiple
+                    value={filterClasses}
+                    onChange={(e) => setFilterClasses(e.target.value)}
+                    input={<OutlinedInput label="Classe" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip key={value} label={value} />
+                        ))}
+                      </Box>
+                    )}
+                  >
+                    {(tipoEnsino === "REGULAR" ? regularClasses : ejaClasses).map((turma) => (
+                      <MenuItem key={turma} value={turma}>
+                        <Checkbox checked={filterClasses.includes(turma)} />
+                        {turma}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
           </div>
-        </div>
-      </DialogContent>
-
+        </DialogContent>
         <DialogActions>
+          <Button onClick={handleClearFilters} color="error">
+            Limpar Filtros
+          </Button>
           <Button onClick={handleCloseDialog} color="primary">
             Fechar
           </Button>
         </DialogActions>
       </Dialog>
+
       <Paper className="tabela-aluno">
         <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader aria-label="sticky table">
@@ -306,43 +306,14 @@ const handleDelete = () => {
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
-                    align={column.align}
                     style={{ minWidth: column.minWidth }}
-                    sx={{ fontWeight: 'bold', backgroundColor: '#f0f0f0', color: '#333' }}
+                    sx={{
+                      fontWeight: "bold",
+                      backgroundColor: "#f0f0f0",
+                      color: "#333",
+                    }}
                   >
-                    {column.id === 'RA' ? (
-                      <div className='icon-admin'>
-                        <ContactsIcon />
-                        {column.label}
-                      </div>
-                    ) : column.id === "turma" ? (
-                      <div className="icon-email">
-                        <GroupsIcon />
-                        {column.label}
-                      </div>
-                    ) : column.id === "nome" ? (
-                      <div className="icon-nome">
-                        <BadgeIcon />
-                        {column.label}
-                      </div>
-                    ) : column.id === "view" ? (
-                      <div className="icon-edit">
-                        <TextSnippetIcon />
-                        {column.label}
-                      </div>
-                    ): column.id === "tarefa" ? (
-                      <div className="icon-tarefa">
-                        <TextSnippetIcon />
-                        {column.label}
-                      </div>
-                    ) : column.id === "delete" ? (
-                      <div className="icon-delete">
-                        <DeleteIcon />
-                        {column.label}
-                      </div>
-                    ) : (
-                      column.label
-                    )}
+                    {column.label}
                   </TableCell>
                 ))}
               </TableRow>
@@ -351,51 +322,49 @@ const handleDelete = () => {
               {rows
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => (
-                  <TableRow 
-                    hover 
-                    role="checkbox" 
-                    tabIndex={-1} 
-                    key={row.id} 
-                    sx={{ backgroundColor: index % 2 === 0 ? 'white' : '#f0f0f0' }}
-                  >
+                  <TableRow hover key={row.id}>
                     {columns.map((column) => {
                       const value = row[column.id];
-                      return (
-                        <TableCell key={column.id} align={column.align}>
-                          {column.id === 'view' ? (
-                            <Button 
-                              variant="contained" 
-                              color="primary" 
-                              style={{ backgroundColor: '#007bff', color: 'white' }}
-                              startIcon={<ComputerIcon />}
-                              onClick={() => handleView(row.id)}
-                            >
-                              Visualizar dados
-                            </Button>
-                          ) : column.id === 'tarefa' ? (
+                      if (column.id === "view")
+                        return (
+                          <TableCell align="center" key={column.id}>
                             <Button
                               variant="contained"
                               color="primary"
-                              style={{ backgroundColor: '#007bff', color: 'white' }}
-                              startIcon={<TextSnippetIcon />}
+                              onClick={() => handleView(row.id)}
+                              startIcon={<ComputerIcon />}
+                            >
+                              Visualizar dados
+                            </Button>
+                          </TableCell>
+                        );
+                      if (column.id === "tarefa")
+                        return (
+                          <TableCell align="center" key={column.id}>
+                            <Button
+                              variant="contained"
+                              color="primary"
                               onClick={() => handleTarefa(row.id)}
+                              startIcon={<TextSnippetIcon />}
                             >
                               Ver Tarefas
                             </Button>
-                          ) : column.id === 'delete' ? (
+                          </TableCell>
+                        );
+                      if (column.id === "delete")
+                        return (
+                          <TableCell align="center" key={column.id}>
                             <Button
-                            sx = {{ backgroundColor: 'red', color: 'white' }}
-                            onClick={() => handleConfirmDelete(row.id)}
-                            variant="contained"
-                            startIcon={<DeleteIcon />}
-                          >
-                            Excluir
-                          </Button>
-                          ) : (
-                            value
-                          )}
-                        </TableCell>
-                      );
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleConfirmDelete(row.id)}
+                              startIcon={<DeleteIcon />}
+                            >
+                              Excluir
+                            </Button>
+                          </TableCell>
+                        );
+                      return <TableCell key={column.id}>{value}</TableCell>;
                     })}
                   </TableRow>
                 ))}
@@ -412,9 +381,11 @@ const handleDelete = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <div className='button-container'>
-        <Link to='/alunos/criar' className='create-user'>
-          <Button variant="contained" disableElevation>Criar novo aluno</Button>
+      <div className="button-container">
+        <Link to="/alunos/criar" className="create-user">
+          <Button variant="contained" disableElevation>
+            Criar novo aluno
+          </Button>
         </Link>
       </div>
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
@@ -423,8 +394,10 @@ const handleDelete = () => {
           <Typography>Tem certeza que deseja excluir este aluno?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">Cancelar</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">Excluir</Button>
+          <Button onClick={handleCloseDeleteDialog}>Cancelar</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Excluir
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
