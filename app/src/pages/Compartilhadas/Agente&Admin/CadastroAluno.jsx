@@ -280,18 +280,23 @@ const CadastroAluno = () => {
                     />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    className="form-field"
-                    margin="normal"
-                    required
-                    fullWidth
+                <FormControl fullWidth required>
+                  <InputLabel id="turma-label">Turma</InputLabel>
+                  <Select
+                    labelId="turma-label"
                     id="turma"
-                    label="Turma"
                     name="turma"
                     value={formData.turma}
                     onChange={handleChange}
-                    autoComplete="turma"
-                    />
+                    label="Turma"
+                  >
+                    <MenuItem value=""><em>Selecione a turma</em></MenuItem>
+                    {["1A","1B","2A","2B","3A","3B","4A","4B","5A","5B","6A","6B","7A","7B","8A","8B","9A","9B","9C"].map(turma => (
+                      <MenuItem key={turma} value={turma}>{turma}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField

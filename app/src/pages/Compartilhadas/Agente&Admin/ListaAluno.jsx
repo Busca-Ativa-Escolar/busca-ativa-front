@@ -248,30 +248,50 @@ const handleDelete = () => {
       </div>
       <Dialog className='tabela-aluno' open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Filtros</DialogTitle>
-        <DialogContent>
-          <div className="filter-section">
-            <div className="filter-group">
-              <h4>Ano:</h4>
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(year => (
-                <FormControlLabel
-                  key={year}
-                  control={<Checkbox checked={filterYears.includes(year)} onChange={handleYearChange} value={year} />}
-                  label={`${year}° Ano`}
-                />
-              ))}
-            </div>
-            <div className="filter-group">
-              <h4>Turma:</h4>
-              {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(cls => (
-                <FormControlLabel
-                  key={cls}
-                  control={<Checkbox checked={filterClasses.includes(cls)} onChange={handleClassChange} value={cls} />}
-                  label={cls}
-                />
-              ))}
-            </div>
+      <DialogContent>
+        <div className="filter-section">
+          <div className="filter-group">
+            <h4>Ano:</h4>
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(year => (
+              <FormControlLabel
+                key={year}
+                control={<Checkbox checked={filterYears.includes(year)} onChange={handleYearChange} value={year} />}
+                label={`${year}° Ano`}
+              />
+            ))}
           </div>
-        </DialogContent>
+
+          <div className="filter-group">
+            <h4>Turma:</h4>
+            <FormControl fullWidth variant="outlined" size="small" sx={{ mt: 2 }}>
+              <InputLabel id="turma-select-label">Turma</InputLabel>
+              <Select
+                labelId="turma-select-label"
+                value={filterClasses[0] || ""}
+                onChange={(e) => setFilterClasses(e.target.value ? [e.target.value] : [])}
+                label="Turma"
+              >
+                <MenuItem value="">Todas</MenuItem>
+                {[
+                  "1A", "1B", "1C",
+                  "2A", "2B", "2C",
+                  "3A", "3B", "3C",
+                  "4A", "4B", "4C",
+                  "5A", "5B", "5C",
+                  "6A", "6B", "6C",
+                  "7A", "7B", "7C",
+                  "8A", "8B", "8C",
+                  "9A", "9B", "9C",
+                  "EJA1", "EJA2"
+                ].map((turma) => (
+                  <MenuItem key={turma} value={turma}>{turma}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        </div>
+      </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
             Fechar

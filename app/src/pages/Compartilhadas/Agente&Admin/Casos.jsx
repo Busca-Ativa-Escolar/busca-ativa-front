@@ -543,6 +543,7 @@ export default function Casos() {
                                 >
                                     <MenuItem value={"FINALIZADO"}>Finalizado</MenuItem>
                                     <MenuItem value={"EM ABERTO"}>Em aberto</MenuItem>
+                                    <MenuItem value={"NENHUM"}>Nenhum</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
