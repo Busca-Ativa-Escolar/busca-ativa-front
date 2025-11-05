@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [turmaData, setTurmaData] = useState([]);
   const [regularData, setRegularData] = useState([]);
   const [ejaData, setEjaData] = useState([]);
+  const [geralData, setGeralData] = useState([]);
   const [statusResumo, setStatusResumo] = useState({
     abertos: 0,
     finalizados: 0,
@@ -81,7 +82,7 @@ export default function Dashboard() {
       else if (status === "FINALIZADO") turmaCounts[turma].finalizados++;
       else turmaCounts[turma].indefinidos++;
 
-      if (turma.startsWith("EJA")) {
+      if (turma.toUpperCase().includes("EJ")) {
         if (!ejaCounts[turma])
           ejaCounts[turma] = { abertos: 0, finalizados: 0, indefinidos: 0 };
         if (status === "EM ABERTO") ejaCounts[turma].abertos++;
@@ -138,6 +139,49 @@ export default function Dashboard() {
         ...ejaCounts[key],
       }))
     );
+    // 🔹 Totalizar casos por categoria (Regular vs EJA)
+    let totalRegular = 0;
+    let totalEJA = 0;
+    let totalRegularFinalizados = 0;
+    let totalEJAFinalizados = 0;
+    let totalRegularAbertos = 0;
+    let totalEJAAbertos = 0;
+    let totalRegularIndefinidos = 0;
+    let totalEJAIndefinidos = 0;
+
+    // Somar totais consolidados
+    Object.keys(regularCounts).forEach(key => {
+      totalRegular += (regularCounts[key].abertos + regularCounts[key].finalizados + regularCounts[key].indefinidos);
+      totalRegularAbertos += regularCounts[key].abertos;
+      totalRegularFinalizados += regularCounts[key].finalizados;
+      totalRegularIndefinidos += regularCounts[key].indefinidos;
+    });
+
+    Object.keys(ejaCounts).forEach(key => {
+      totalEJA += (ejaCounts[key].abertos + ejaCounts[key].finalizados + ejaCounts[key].indefinidos);
+      totalEJAAbertos += ejaCounts[key].abertos;
+      totalEJAFinalizados += ejaCounts[key].finalizados;
+      totalEJAIndefinidos += ejaCounts[key].indefinidos;
+    });
+
+    // 🔹 Consolidar em um dataset novo
+    const geralData = [
+      {
+        name: "Regular",
+        abertos: totalRegularAbertos,
+        finalizados: totalRegularFinalizados,
+        indefinidos: totalRegularIndefinidos
+      },
+      {
+        name: "EJA",
+        abertos: totalEJAAbertos,
+        finalizados: totalEJAFinalizados,
+        indefinidos: totalEJAIndefinidos
+      }
+    ];
+
+    setGeralData(geralData);
+
   };
 
   const prioridadeConfig = {
@@ -243,7 +287,7 @@ export default function Dashboard() {
           {/* Gráficos */}
           {renderChart("Casos por Turma (Regular)", regularData)}
           {renderChart("Casos por Turma (EJA)", ejaData)}
-          {renderChart("Casos por Turma (Geral)", turmaData)}
+          {renderChart("Comparativo Geral (Regular x EJA)", geralData)}
         </Grid>
       </Container>
     </div>

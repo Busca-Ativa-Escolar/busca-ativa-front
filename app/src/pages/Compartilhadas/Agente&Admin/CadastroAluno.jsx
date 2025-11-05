@@ -110,6 +110,20 @@ const CadastroAluno = () => {
 
   const handleSubmitOne = async (e) => {
     e.preventDefault();
+
+    // 🔹 Validação de nome (sempre obrigatório)
+    if (!formData.nome.trim()) {
+      alert("Por favor, insira o nome do aluno.");
+      return;
+    }
+
+    // 🔹 Se o usuário escolheu uma turma (Regular ou EJA), deve escolher a classe
+    if (formData.turmaTipo && !formData.turma.trim()) {
+      alert("Por favor, selecione a classe correspondente à turma escolhida.");
+      return;
+    }
+
+    // 🔹 Monta o objeto para envio
     const alunoData = {
       nome: formData.nome.trim(),
       turma: formData.turma.trim(),
@@ -161,6 +175,7 @@ const CadastroAluno = () => {
       alert('Erro ao realizar cadastro');
     }
   };
+
 
   return (
     <div>
@@ -303,15 +318,15 @@ const CadastroAluno = () => {
                           label="Classe"
                         >
                           <MenuItem value=""><em>Selecione</em></MenuItem>
-                          {['EJA-1A', 'EJA-1B', 'EJA-1C',
-                            'EJA-2A', 'EJA-2B', 'EJA-2C',
-                            'EJA-3A', 'EJA-3B', 'EJA-3C',
-                            'EJA-4A', 'EJA-4B', 'EJA-4C',
-                            'EJA-5A', 'EJA-5B', 'EJA-5C',
-                            'EJA-6A', 'EJA-6B', 'EJA-6C',
-                            'EJA-7A', 'EJA-7B', 'EJA-7C',
-                            'EJA-8A', 'EJA-8B', 'EJA-8C',
-                            'EJA-9A', 'EJA-9B', 'EJA-9C'].map((turma) => (
+                          {["1A - EJA", "1B - EJA", "1C - EJA",
+                          "2A - EJA", "2B - EJA", "2C - EJA",
+                          "3A - EJA", "3B - EJA", "3C - EJA",
+                          "4A - EJA", "4B - EJA", "4C - EJA",
+                          "5A - EJA", "5B - EJA", "5C - EJA",
+                          "6A - EJA", "6B - EJA", "6C - EJA",
+                          "7A - EJA", "7B - EJA", "7C - EJA",
+                          "8A - EJA", "8B - EJA", "8C - EJA",
+                          "9A - EJA", "9B - EJA", "9C - EJA"].map((turma) => (
                             <MenuItem key={turma} value={turma}>{turma}</MenuItem>
                           ))}
                         </Select>

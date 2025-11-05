@@ -28,9 +28,6 @@ import {
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import GroupsIcon from "@mui/icons-material/Groups";
-import BadgeIcon from "@mui/icons-material/Badge";
-import ContactsIcon from "@mui/icons-material/Contacts";
 import ComputerIcon from "@mui/icons-material/Computer";
 import "./static/AlunosTable.css";
 import { rota_base } from "../../constants";
@@ -45,7 +42,6 @@ const columns = [
 function AlunosTable() {
   const [alunos, setAlunos] = useState([]);
   const [filteredAlunos, setFilteredAlunos] = useState([]);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterClasses, setFilterClasses] = useState([]);
   const [sortOption, setSortOption] = useState("");
@@ -71,18 +67,33 @@ function AlunosTable() {
         setAlunos(data);
         setFilteredAlunos(data);
       })
-      .catch((error) => setError(error.message));
+      .catch((error) => console.error("Error fetching alunos:", error));
   }, [token]);
 
   useEffect(() => {
-    let results = alunos.filter(
-      (aluno) =>
-        aluno.nome.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (filterClasses.length === 0 ||
-          filterClasses.some(
-            (cls) => aluno.turma.toUpperCase() === cls.toUpperCase()
-          ))
-    );
+    const normalize = (str) =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+
+    let results = alunos.filter((aluno) => {
+      const nomeMatch =
+        normalize(aluno.nome).includes(normalize(searchTerm)) ||
+        (aluno.RA && normalize(String(aluno.RA)).includes(normalize(searchTerm)));
+
+      const turmaUpper = (aluno.turma || "").toUpperCase();
+
+      if (tipoEnsino === "EJA" && !turmaUpper.includes("EJA")) return false;
+      if (tipoEnsino === "REGULAR" && turmaUpper.includes("EJA")) return false;
+
+      const classeMatch =
+        filterClasses.length === 0 ||
+        filterClasses.some((cls) => turmaUpper.includes(cls.toUpperCase()));
+
+      return nomeMatch && classeMatch;
+    });
 
     if (sortOption === "nameAsc") {
       results.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -91,26 +102,15 @@ function AlunosTable() {
     }
 
     setFilteredAlunos(results);
-  }, [searchTerm, sortOption, filterClasses, alunos]);
+  }, [searchTerm, sortOption, filterClasses, tipoEnsino, alunos]);
 
-  const handleSearchChange = (event) => setSearchTerm(event.target.value);
-  const handleSortChange = (event) => setSortOption(event.target.value);
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
+  const handleSortChange = (e) => setSortOption(e.target.value);
   const handleOpenDialog = () => setDialogOpen(true);
   const handleCloseDialog = () => setDialogOpen(false);
   const handleClearFilters = () => {
     setTipoEnsino("");
     setFilterClasses([]);
-  };
-
-  const handleViewClick = (id) => navigate(`/alunos/${id}`);
-  const handleAddTaskClick = (id) => navigate(`/tarefas/${id}`);
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const handleChangePage = (event, newPage) => setPage(newPage);
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
   };
 
   const regularClasses = [
@@ -125,29 +125,31 @@ function AlunosTable() {
     "9A", "9B", "9C",
   ];
 
-  const ejaClasses = ["EJA1", "EJA2"];
+  const ejaClasses = [
+    "1A - EJA", "1B - EJA", "1C - EJA",
+    "2A - EJA", "2B - EJA", "2C - EJA",
+    "3A - EJA", "3B - EJA", "3C - EJA",
+    "4A - EJA", "4B - EJA", "4C - EJA",
+    "5A - EJA", "5B - EJA", "5C - EJA",
+    "6A - EJA", "6B - EJA", "6C - EJA",
+    "7A - EJA", "7B - EJA", "7C - EJA",
+    "8A - EJA", "8B - EJA", "8C - EJA",
+    "9A - EJA", "9B - EJA", "9C - EJA"
+  ];
 
   return (
     <div>
-      <div className="filter-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography
-          variant="h4"
-          component="h4"
-          style={{
-            marginBottom: "10px",
-            fontFamily: "Roboto, sans-serif",
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            whiteSpace: "nowrap",
-            paddingLeft: "20px",
-          }}
-        >
+      <div
+        className="filter-container"
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+      >
+        <Typography variant="h4" fontWeight="bold" textTransform="uppercase" style={{ paddingLeft: "20px" }}>
           Controle de Tarefas
         </Typography>
 
         <div className="filter-box" style={{ display: "flex", alignItems: "center" }}>
           <TextField
-            label="Nome"
+            label="Nome ou RA"
             variant="outlined"
             size="small"
             value={searchTerm}
@@ -163,34 +165,26 @@ function AlunosTable() {
           />
           <FormControl variant="outlined" size="small" style={{ marginRight: "10px" }}>
             <InputLabel>Ordenar Por</InputLabel>
-            <Select
-              value={sortOption}
-              onChange={handleSortChange}
-              label="Ordenar Por"
-            >
+            <Select value={sortOption} onChange={handleSortChange} label="Ordenar Por">
               <MenuItem value=""><em>Nada</em></MenuItem>
               <MenuItem value="nameAsc">Nome (A-Z)</MenuItem>
               <MenuItem value="nameDesc">Nome (Z-A)</MenuItem>
             </Select>
           </FormControl>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={handleOpenDialog}
-            style={{ color: "white", width: "80px", height: "38px" }}
-          >
+          <Button variant="contained" size="small" onClick={handleOpenDialog}>
             Filtros
           </Button>
         </div>
       </div>
 
+      {/* Modal de filtros */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Filtros</DialogTitle>
         <DialogContent>
           <div className="filter-section">
             <div className="filter-group">
               <h4>Turma:</h4>
-              <FormControl fullWidth variant="outlined" size="small" sx={{ mt: 1 }}>
+              <FormControl fullWidth size="small" sx={{ mt: 1 }}>
                 <InputLabel id="tipo-ensino-label">Turma</InputLabel>
                 <Select
                   labelId="tipo-ensino-label"
@@ -249,20 +243,14 @@ function AlunosTable() {
         </DialogActions>
       </Dialog>
 
+      {/* Tabela */}
       <Paper className="table-container">
         <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
-                  <TableCell
-                    key={column.id}
-                    style={{
-                      minWidth: column.minWidth,
-                      backgroundColor: "#f0f0f0",
-                      fontWeight: "bold",
-                    }}
-                  >
+                  <TableCell key={column.id} sx={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
                     {column.label}
                   </TableCell>
                 ))}
@@ -271,10 +259,9 @@ function AlunosTable() {
             <TableBody>
               {filteredAlunos
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((aluno, index) => (
+                .map((aluno) => (
                   <TableRow hover key={aluno._id}>
                     {columns.map((column) => {
-                      let value = aluno[column.id];
                       if (column.id === "tarefas") {
                         return (
                           <TableCell key={column.id} align="center">
@@ -291,7 +278,7 @@ function AlunosTable() {
                       }
                       return (
                         <TableCell key={column.id} align="center">
-                          {column.format ? column.format(value) : value}
+                          {aluno[column.id]}
                         </TableCell>
                       );
                     })}
@@ -306,8 +293,11 @@ function AlunosTable() {
           count={filteredAlunos.length}
           rowsPerPage={rowsPerPage}
           page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(+e.target.value);
+            setPage(0);
+          }}
         />
       </Paper>
     </div>

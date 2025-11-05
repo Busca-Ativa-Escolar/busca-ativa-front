@@ -20,7 +20,6 @@ import {
   DialogContent,
   DialogTitle,
   Checkbox,
-  FormControlLabel,
   Chip,
   Box,
   OutlinedInput,
@@ -28,9 +27,6 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
-import GroupsIcon from "@mui/icons-material/Groups";
-import BadgeIcon from "@mui/icons-material/Badge";
-import ContactsIcon from "@mui/icons-material/Contacts";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import ComputerIcon from "@mui/icons-material/Computer";
 import HeaderAdmin from "../../Admin/HeaderAdmin";
@@ -66,10 +62,6 @@ function ListaAluno() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = () => {
     fetch(rota_base + "/alunoBuscaAtiva/completo", {
       method: "GET",
       headers: {
@@ -86,18 +78,37 @@ function ListaAluno() {
         setFilteredUsers(data);
       })
       .catch((error) => console.error("Error fetching users:", error));
-  };
+  }, [token]);
 
   useEffect(() => {
-    let results = users.filter(
-      (user) =>
-        (user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (user.RA && String(user.RA).includes(searchTerm))) &&
-        (filterClasses.length === 0 ||
-          filterClasses.some(
-            (cls) => user.turma.toUpperCase() === cls.toUpperCase()
-          ))
-    );
+    const normalize = (str) =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+
+    let results = users.filter((user) => {
+      const nomeMatch =
+        normalize(user.nome).includes(normalize(searchTerm)) ||
+        (user.RA && normalize(String(user.RA)).includes(normalize(searchTerm)));
+
+      const turmaUpper = (user.turma || "").toUpperCase();
+
+      if (tipoEnsino === "EJA" && !turmaUpper.includes("EJA")) {
+        return false;
+      }
+
+      if (tipoEnsino === "REGULAR" && turmaUpper.includes("EJA")) {
+        return false;
+      }
+
+      const classeMatch =
+        filterClasses.length === 0 ||
+        filterClasses.some((cls) => turmaUpper.includes(cls.toUpperCase()));
+
+      return nomeMatch && classeMatch;
+    });
 
     if (sortOption === "nameAsc") {
       results.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -106,7 +117,7 @@ function ListaAluno() {
     }
 
     setFilteredUsers(results);
-  }, [searchTerm, sortOption, filterClasses, users]);
+  }, [searchTerm, sortOption, filterClasses, tipoEnsino, users]);
 
   const handleSearchChange = (event) => setSearchTerm(event.target.value);
   const handleSortChange = (event) => setSortOption(event.target.value);
@@ -167,15 +178,17 @@ function ListaAluno() {
     "9A", "9B", "9C",
   ];
 
-  const ejaClasses = ["EJA-1A", "EJA-1B", "EJA-1C",
-                            "EJA-2A", "EJA-2B", "EJA-2C",
-                            "EJA-3A", "EJA-3B", "EJA-3C",
-                            "EJA-4A", "EJA-4B", "EJA-4C",
-                            "EJA-5A", "EJA-5B", "EJA-5C",
-                            "EJA-6A", "EJA-6B", "EJA-6C",
-                            "EJA-7A", "EJA-7B", "EJA-7C",
-                            "EJA-8A", "EJA-8B", "EJA-8C",
-                            "EJA-9A", "EJA-9B", "EJA-9C"];
+  const ejaClasses = [
+    "1A - EJA", "1B - EJA", "1C - EJA",
+    "2A - EJA", "2B - EJA", "2C - EJA",
+    "3A - EJA", "3B - EJA", "3C - EJA",
+    "4A - EJA", "4B - EJA", "4C - EJA",
+    "5A - EJA", "5B - EJA", "5C - EJA",
+    "6A - EJA", "6B - EJA", "6C - EJA",
+    "7A - EJA", "7B - EJA", "7C - EJA",
+    "8A - EJA", "8B - EJA", "8C - EJA",
+    "9A - EJA", "9B - EJA", "9C - EJA",
+  ];
 
   const rows = filteredUsers.map((user) =>
     createData(user._id, user.nome, user.turma, user.RA)
@@ -185,18 +198,7 @@ function ListaAluno() {
     <div className="user-control">
       {permissao === "AGENTE" ? <HeaderAgente /> : <HeaderAdmin />}
       <div className="title">
-        <Typography
-          variant="h4"
-          component="h4"
-          style={{
-            marginBottom: "10px",
-            textAlign: "center",
-            fontFamily: "Roboto, sans-serif",
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            paddingLeft: "2%",
-          }}
-        >
+        <Typography variant="h4" component="h4" className="title-text">
           Controle de Alunos
         </Typography>
         <div className="filter-container">
@@ -232,7 +234,7 @@ function ListaAluno() {
           </div>
         </div>
       </div>
-
+      {/* Dialog de Filtros */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Filtros</DialogTitle>
         <DialogContent>
@@ -256,7 +258,6 @@ function ListaAluno() {
                 </Select>
               </FormControl>
             </div>
-
             {tipoEnsino && (
               <div className="filter-group">
                 <h4>Classe:</h4>
@@ -297,22 +298,14 @@ function ListaAluno() {
           </Button>
         </DialogActions>
       </Dialog>
-
+      {/* Tabela */}
       <Paper className="tabela-aluno">
         <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+          <Table stickyHeader>
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
-                  <TableCell
-                    key={column.id}
-                    style={{ minWidth: column.minWidth }}
-                    sx={{
-                      fontWeight: "bold",
-                      backgroundColor: "#f0f0f0",
-                      color: "#333",
-                    }}
-                  >
+                  <TableCell key={column.id} sx={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
                     {column.label}
                   </TableCell>
                 ))}
@@ -321,7 +314,7 @@ function ListaAluno() {
             <TableBody>
               {rows
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => (
+                .map((row) => (
                   <TableRow hover key={row.id}>
                     {columns.map((column) => {
                       const value = row[column.id];
@@ -388,18 +381,6 @@ function ListaAluno() {
           </Button>
         </Link>
       </div>
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <Typography>Tem certeza que deseja excluir este aluno?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancelar</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 }
